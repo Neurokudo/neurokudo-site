@@ -27,12 +27,22 @@ jobs:
           force_path_style = true
           EOF
 
-      - name: Deploy to S3
+      - name: Deploy images to S3
         run: |
           rclone sync . selectel:${{ secrets.S3_BUCKET }} \
             --exclude ".git/**" \
             --exclude ".github/**" \
             --exclude ".DS_Store" \
             --exclude "*.md" \
+            --exclude "*.html" \
+            --header-upload "Cache-Control: public, max-age=86400" \
+            --s3-no-check-bucket \
+            -v
+
+      - name: Deploy HTML to S3 (no cache)
+        run: |
+          rclone copy . selectel:${{ secrets.S3_BUCKET }} \
+            --include "*.html" \
+            --header-upload "Cache-Control: no-cache, no-store, must-revalidate" \
             --s3-no-check-bucket \
             -v
